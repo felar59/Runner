@@ -25,6 +25,7 @@ void LoopManagement::run(sf::RenderWindow& window){
             if (!inPause){
                 currentState->handleEvents(window, event);
             } else{
+                currentState->setDeltaTime(0.0f);
                 pause->handleEvents(window, event, inPause);
             }
         }

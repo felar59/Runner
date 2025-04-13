@@ -10,26 +10,36 @@ class Player
 {
 private:
     int health;
-    std::vector<float> pos;
-    float SpeedY = 0.0f;
-    float gravity = 50.0f;
-    float deltaTime = 0.016f;
+    sf::Vector2f pos;
+    float Velocity = 0.0f;
+    float gravity = 60.0f/0.016f;
+    sf::RectangleShape hitboxPlayer;
+    std::vector<sf::Texture> runTextures;
+    std::vector<sf::Sprite> runSprites;
+    std::vector<sf::Texture> jumpTextures;
+    std::vector<sf::Sprite> jumpSprites;
     
+    sf::Sprite currentSkin;
+
+
 public:
     Player(); 
-    Player(int health, std::vector<float> pos);
+    Player(int health, sf::Vector2f pos);
     ~Player();
     // Getter
-    std::vector<float> getPos();
+    sf::Vector2f getPos();
     int getHeatlh();
 
     // Setter
-    void setPos(std::vector<float> newPos);
+    void setPos(sf::Vector2f newPos);
     void setHealth(int newHealth);
 
-    // Autres
-    bool ApplyGravity(std::vector<std::vector <Tile>>& tiles, sf::CircleShape& drawPlayer);
+    // Others
+    void LoadPlayer(sf::RenderWindow& window);
+    bool ApplyGravity(std::vector<std::vector <Tile>>& tiles, float deltaTime);
     bool jump(bool doubleJump, bool onFloor);
+    void draw(sf::RenderWindow& window);
+    void updateSkin(float deltaTime);
 };
 
 #endif

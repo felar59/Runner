@@ -1,25 +1,76 @@
 #include "Tiles.hpp"
+#include "Enemy.hpp"
 #include <iostream>
+#include <random>
 
-
-Tiles::Tiles(){
+Tiles::Tiles(sf::RenderWindow& window){
     // Initialize the tiles
-    tiles.resize(9, std::vector<Tile>(20, Tile(0, 0, 0, 0)));
+    LoadRessources(window);
+    tiles.resize(9, std::vector<Tile>(20, Tile()));
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     noise.SetFrequency(0.1f);
     noise.SetSeed(rand() % 500);
-    
     for (int x = 0; x < 20; x++){
-        for (int y = 5; y < 9; ++y) {
-            tiles[y][x] = Tile(x * TileSizeX, y * TileSizeY, TileSizeX, TileSizeY);
+        for (int y = 6; y < 9; ++y) {
+            
+            tiles[y][x] = Tile(x * TileSizeX, y * TileSizeY, TileSizeX, TileSizeY, false);
+            if (y == 6){
+                tiles[y][x].setSprite(sprites[3]);
+            } else{
+                tiles[y][x].setSprite(sprites[7]);
+            }
         }
     }
-
+    
 }
 
 Tiles::~Tiles(){
     tiles.clear();
 };
+
+// Getters
+int Tiles::size(){
+    return tiles.size();
+}
+
+std::vector<std::vector<Tile>>& Tiles::getVector(){
+    return tiles;
+}
+
+float Tiles::getSpeed(){
+    return GroundSpeed;
+}
+
+// Others
+void Tiles::LoadRessources(sf::RenderWindow& window){
+    int TileSize = 16;
+    sf::Image Tileset;
+    if (!Tileset.loadFromFile("assets/Tiles/Tileset.png")){
+        std::cerr << "Error loading Tileset" << std::endl;
+    }
+    sf::Texture tempTexture;
+    // pair vector
+    std::vector<sf::Vector2f> textureCoords = {
+        {3, 0}, {0, 0}, {2, 0}, {1, 0}, // TopLeftRight, TopLeft, TopRight, Top
+        {3, 1}, {0, 1}, {2, 1}, {1, 1},  // LeftRight, Left, Right, Middle
+        {0, 2}, {1, 2}, {2, 2}, {3, 2}, // Middle Variation
+    };
+    for (const auto& coord : textureCoords) {
+        if (!tempTexture.loadFromImage(Tileset, sf::IntRect(coord.x * TileSize, coord.y * TileSize, TileSize, TileSize))){
+            std::cerr << "Error loading texture" << std::endl;
+        }
+        textures.push_back(tempTexture);
+    }
+    for (auto& texture : textures){
+        texture.getSize();
+        TileSize = window.getSize().x/16;
+        sf::Sprite tempSprite;
+        tempSprite.setTexture(texture);
+        tempSprite.setScale(TileSizeX / static_cast<float>(texture.getSize().x),
+                    TileSizeY / static_cast<float>(texture.getSize().y));
+        sprites.push_back(tempSprite);
+    } 
+}
 
 void Tiles::draw(sf::RenderWindow& window){
     for (size_t y = 0; y < tiles.size(); y++){
@@ -29,15 +80,7 @@ void Tiles::draw(sf::RenderWindow& window){
     }
 }
 
-int Tiles::size(){
-    return tiles.size();
-}
-
-std::vector<std::vector<Tile>>& Tiles::getVector(){
-    return tiles;
-}
-
-void Tiles::shift(std::vector<std::vector<Tile>>& tiles, sf::Int32 elapsed){
+void Tiles::shift(std::vector<std::vector<Tile>>& tiles, Enemy& enemy){
     // Shift all tiles to the left
     for (size_t y = 0; y < tiles.size(); y++){
         for (size_t x = 0; x < tiles[y].size() - 1; x++){
@@ -45,38 +88,63 @@ void Tiles::shift(std::vector<std::vector<Tile>>& tiles, sf::Int32 elapsed){
             tiles[y][x].setPosition(x * TileSizeX, y * TileSizeY);
         }
     }
-
-    // Create new tiles on the last column
-    noiseVariationForce += 0.01f + elapsed / 100.0f;
-    std::cout << "Difficulty : " <<  0.01f + elapsed / 100.0f << std::endl;
+    elapsed += 0.0015f;
+    noiseVariationForce += elapsed;
+    float n = noise.GetNoise(noiseVariationForce, 0.0f);
+    int groundHeight = std::min(8, static_cast<int>((n + 1.0f) / 1.4f * (tiles.size() - 1)));
     for (size_t y = 0; y < tiles.size(); y++){
-        float n = noise.GetNoise(noiseVariationForce, 0.0f);
-        int groundHeight = static_cast<int>((n + 1.0f) / 1.5f * (9-1));
-    
+
         if (int(y) >= groundHeight) {
-            tiles[y][19] = Tile(20 * TileSizeX, y * TileSizeY, TileSizeX, TileSizeY);
+            tiles[y][19] = Tile(20 * TileSizeX, y * TileSizeY, TileSizeX, TileSizeY, false);
         } else {
-            tiles[y][19] = Tile(0, 0, 0, 0);
+            tiles[y][19] = Tile();
         }
-    }
-}
 
-void Tiles::moves(sf::Int32 elapsed){
-    bool needShift = false;
-
-    for (size_t y = 0; y < tiles.size(); y++){
-        for (size_t x = 0; x < tiles[y].size(); x++){
-            tiles[y][x].setPosition(tiles[y][x].getPos()[0] - GroundSpeed, tiles[y][x].getPos()[1]);
-            // If first column is out of screen
-            if (tiles[y][x].getPos()[0] < -TileSizeX)
-            {
-                needShift = true;
+        // Set the texture of the 18 column
+        if (!tiles[y][18].isVoid()) {
+            bool top = tiles[y-1][18].isVoid();
+            bool left = tiles[y][17].isVoid();
+            bool right = tiles[y][19].isVoid();
+        
+            if (top && left && right) {
+                tiles[y][18].setSprite(sprites[0]);
+            } else if (top && left) {
+                tiles[y][18].setSprite(sprites[1]);
+            } else if (top && right) {
+                tiles[y][18].setSprite(sprites[2]);
+            } else if (top) {
+                tiles[y][18].setSprite(sprites[3]);
+            } else if (left && right) {
+                tiles[y][18].setSprite(sprites[4]);
+            } else if (left) {
+                tiles[y][18].setSprite(sprites[5]);
+            } else if (right) {
+                tiles[y][18].setSprite(sprites[6]);
+            } else {
+                if (rand() % 10 == 0){
+                    tiles[y][18].setSprite(sprites[8 + frameMiddle]);
+                    frameMiddle = (frameMiddle + 1) % 4;
+                } else {                
+                    tiles[y][18].setSprite(sprites[7]);
+                }
             }
         }
     }
+    enemy.summonEnemy({tiles[groundHeight][19].getPos().x - TileSizeX, tiles[groundHeight][19].getPos().y - TileSizeY}, elapsed);
+}
 
-    // Shift tiles and create a new one if we need
-    if(needShift){
-        shift(tiles, elapsed);
+void Tiles::moves(float& deltaTime, Enemy& enemy){
+    moveOffset += GroundSpeed * deltaTime;
+
+    if (moveOffset >= TileSizeX){
+        moveOffset -= TileSizeX;
+        shift(tiles, enemy);
+    }
+
+    for (size_t y = 0; y < tiles.size(); y++){
+        for (size_t x = 0; x < tiles[y].size(); x++){
+            float newX = x * TileSizeX - moveOffset;
+            tiles[y][x].setPosition(newX, y * TileSizeY);
+        }
     }
 }

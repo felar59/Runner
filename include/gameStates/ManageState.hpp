@@ -12,6 +12,7 @@ public:
     virtual void handleEvents(sf::RenderWindow& window, sf::Event& event) = 0;
     virtual void update() = 0;
     virtual void draw(sf::RenderWindow& window) = 0;
+    virtual void setDeltaTime(float deltaTime) = 0;
 };
 
 #endif

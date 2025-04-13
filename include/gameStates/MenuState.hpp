@@ -16,6 +16,7 @@ private:
     sf::Text playButtonText;
     sf::Text exitButtonText;
     LoopManagement* loopMain = nullptr;
+    float deltaTime = 0.0f;
     
 public:
     MenuState();
@@ -26,6 +27,7 @@ public:
     void update() override;
     void draw(sf::RenderWindow& window) override;
     void setLoopManager(LoopManagement* manager);
+    void setDeltaTime(float deltaTime) override;
 };
 
 #endif

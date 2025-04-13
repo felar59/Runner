@@ -49,7 +49,7 @@ void MenuState::handleEvents(sf::RenderWindow& window, sf::Event& event) {
             sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
             if (playButton.getGlobalBounds().contains(mousePos)) {
                 std::cout << "Play button clicked" << std::endl;
-                std::unique_ptr<GameState> gameState = std::make_unique<GameState>();
+                std::unique_ptr<GameState> gameState = std::make_unique<GameState>(window);
                 gameState->setLoopManager(loopMain);
                 loopMain->changeState(std::move(gameState), window);
             }
@@ -74,4 +74,8 @@ void MenuState::draw(sf::RenderWindow& window) {
 
 void MenuState::setLoopManager(LoopManagement* manager) {
     loopMain = manager;
+}
+
+void MenuState::setDeltaTime(float deltaTime) {
+    this->deltaTime = deltaTime;
 }

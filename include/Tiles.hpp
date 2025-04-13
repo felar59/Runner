@@ -2,34 +2,47 @@
 #define Tiles_hpp
 
 
+#include <memory>
 #include <SFML/Graphics.hpp>
 #include "Tile.hpp"
+#include "Enemy.hpp"
 #include "FastNoiseLite.h"
 
+class Enemy;
 
 class Tiles
 {
 private:
     std::vector<std::vector<Tile>> tiles;
+    std::vector<sf::Texture> textures;
+    std::vector<sf::Sprite> sprites;
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
     int TileSizeX = desktopMode.width/16;
-    int TileSizeY = desktopMode.height/9.2;
-    int GroundSpeed = 7;
+    int TileSizeY = desktopMode.height/9;
+    float GroundSpeed = 437.5f;
+    float moveOffset = 0.0f;
+
     FastNoiseLite noise;
     float noiseVariationForce = 0.0f;
-
+    float elapsed = 0.1f; // Start variation at 0.1
+    int frameMiddle = 0;
 
 public:
-    Tiles();
+    Tiles(sf::RenderWindow& window);
     ~Tiles();
 
     // Getters
     int size();
     std::vector<std::vector<Tile>>& getVector();
+    float getSpeed();
 
-    void moves(sf::Int32 elapsed);
+    // Setters
+
+    // Others
+    void LoadRessources(sf::RenderWindow& window);
+    void moves(float& deltaTime, Enemy& enemy);
     void draw(sf::RenderWindow& window);
-    void shift(std::vector<std::vector<Tile>>& tiles, sf::Int32 elapsed);
+    void shift(std::vector<std::vector<Tile>>& tiles, Enemy& enemy);
 };
 
 #endif

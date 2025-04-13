@@ -2,7 +2,7 @@
 #include "LoopManagement.hpp"
 #include <iostream>
 
-GameState::GameState(){
+GameState::GameState(sf::RenderWindow& window) : tiles(window){
     std::cout << "Création de l'état Game" << std::endl;
 };
 GameState::~GameState(){
@@ -12,15 +12,20 @@ GameState::~GameState(){
 bool GameState::LoadRessources(sf::RenderWindow& window) {
     // Load Player
     player = Player(3, {(400.0f/1920.0f) * window.getSize().x, 0.0f});
-
-    drawPlayer.setRadius(window.getSize().y / 25);
-    drawPlayer.setFillColor(sf::Color::White);
-
-    // start Clock
-    clock.restart();
+    player.LoadPlayer(window);
+    
+    //Load Enemy
+    enemy.LoadEnemy(window);
 
     // Load tiles
-    Tiles tiles;
+    Tiles tiles(window);
+    
+    // Load paralax background
+    paralaxBG.LoadRessources(window);
+    
+    // start Clock
+    clock.restart();
+    lastFrameTime = clock.getElapsedTime();
 
     return true;
 };
@@ -35,38 +40,52 @@ void GameState::handleEvents(sf::RenderWindow& window, sf::Event& event) {
 };
 
 void GameState::update() {
-    // Move floor for runner
-    sf::Int32 elapsed = clock.getElapsedTime().asSeconds();
-    tiles.moves(elapsed);    
+    std::cout << "deltatime " << deltaTime << std::endl;
+    // Set deltaTime
+    sf::Time currentTime = clock.getElapsedTime();
+    deltaTime = (currentTime - lastFrameTime).asSeconds();
+    lastFrameTime = currentTime;
 
+    // update paralax background
+    paralaxBG.Update(deltaTime);
+
+    // Move floor for runner
+    tiles.moves(deltaTime, enemy); 
+    
+    
     // Gravity on player and collision
-    drawPlayer.setPosition(player.getPos()[0], player.getPos()[1]);
-    onFloor = player.ApplyGravity(tiles.getVector(), drawPlayer);
+    onFloor = player.ApplyGravity(tiles.getVector(), deltaTime);
     if (onFloor) {
         doubleJump = true;
     }
+    // Change Skin player depending on velocity
+    player.updateSkin(deltaTime);
+    
+    // Gravity on enemy and collision
+    enemy.ApplyGravity(tiles.getVector(), tiles.getSpeed(), deltaTime);
+    
+    // Change Skin enemy depending on velocity
+    enemy.updateSkin(deltaTime);
 };
 
 void GameState::draw(sf::RenderWindow& window) {
-    
-    // Player
-    drawPlayer.setPosition(player.getPos()[0], player.getPos()[1]);
-    // Other smaller player
-    sf::CircleShape dbljumpPlayer = drawPlayer;
-    dbljumpPlayer.setRadius(drawPlayer.getRadius() / 1.1);
-    dbljumpPlayer.setFillColor(sf::Color::White);
-    dbljumpPlayer.setPosition(player.getPos()[0] + drawPlayer.getRadius() / 12, player.getPos()[1] + drawPlayer.getRadius() / 12);
-    if(doubleJump){
-        drawPlayer.setFillColor(sf::Color::Green);
-    } else{
-        drawPlayer.setFillColor(sf::Color::Red);
-    }
-    window.draw(drawPlayer);
-    window.draw(dbljumpPlayer);
-    tiles.draw(window);
+    // Paralax background
+    paralaxBG.Draw(window);
 
+    // Player
+    player.draw(window);
+
+    // Enemy
+    enemy.draw(window);
+    
+    // Tiles
+    tiles.draw(window);
 };
 
 void GameState::setLoopManager(LoopManagement* manager) {
     loopMain = manager;
+}
+
+void GameState::setDeltaTime(float deltaTime) {
+    this->deltaTime = deltaTime;
 }

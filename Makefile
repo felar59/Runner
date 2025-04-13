@@ -5,9 +5,12 @@ TARGET = run
 SRC = src/Main.cpp \
 	  src/Loop.cpp \
 	  src/Player.cpp \
+	  src/Enemy.cpp \
 	  src/Tile.cpp \
 	  src/Tiles.cpp \
 	  src/PauseMenu.cpp \
+	  src/ParalaxBG.cpp \
+	  src/Collision.cpp \
 	  src/gameStates/ManageState.cpp \
 	  src/gameStates/GameState.cpp \
 	  src/gameStates/MenuState.cpp \

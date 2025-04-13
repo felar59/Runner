@@ -1,11 +1,12 @@
 #include "Player.hpp"
+#include "Collision.hpp"
 #include <iostream>
 
 Player::Player() : health(3), pos({0.0f, 0.0f}) {
     // Valeurs par défaut
 }
 
-Player::Player(int hp, std::vector<float> beginPos){
+Player::Player(int hp, sf::Vector2f beginPos){
     health = hp;
     pos = beginPos;
 };
@@ -14,7 +15,7 @@ Player::~Player(){
 };
 
 // Getter
-std::vector<float> Player::getPos(){
+sf::Vector2f Player::getPos(){
     return pos;
 };
 int Player::getHeatlh(){
@@ -22,52 +23,97 @@ int Player::getHeatlh(){
 };
 
 // Setter
-void Player::setPos(std::vector<float> newPos){
+void Player::setPos(sf::Vector2f newPos){
     pos = newPos;
 };
 void Player::setHealth(int newHealth){
     health = newHealth;
 };
 
-// Autres
-bool circleRectCollision(sf::CircleShape& circle, sf::RectangleShape& rect) {
-    sf::Vector2f circleCenter = circle.getPosition() + sf::Vector2f(circle.getRadius(), circle.getRadius());
-    sf::FloatRect rectBounds = rect.getGlobalBounds();
+// Others
+void Player::LoadPlayer(sf::RenderWindow& window){
+    sf::Image runTileset;
+    if (!runTileset.loadFromFile("assets/Player/Run.png")) {
+        std::cerr << "Error loading runTileset.png" << std::endl;
+    }
+    const std::vector<sf::Vector2f> textureCoords = {
+        {0, 0}, {21, 0}, {43, 0}, {64, 0}
+    };
+    const std::vector<sf::Vector2f> textureSize = {
+        {20, 28}, {21, 28}, {20, 28}, {21, 28}
+    };
 
-    float closestX = std::clamp(circleCenter.x, rectBounds.left, rectBounds.left + rectBounds.width);
-    float closestY = std::clamp(circleCenter.y, rectBounds.top, rectBounds.top + rectBounds.height);
+    for (int i = 0; i < 4; i++) {
+        sf::Texture tempTexture;
+        if (!tempTexture.loadFromImage(runTileset, sf::IntRect(textureCoords[i].x, textureCoords[i].y, textureSize[i].x, textureSize[i].y))){
+            std::cerr << "Erreur chargement texture frame " << i << std::endl;
+        }
+        runTextures.push_back(tempTexture);
+    }
+    for(auto& texture : runTextures){
+        sf::Sprite tempSprite;
+        tempSprite.setTexture(texture);
+        float scale = window.getSize().x / 20.f / texture.getSize().x;
+        tempSprite.setScale(scale, scale);
+        
+        runSprites.push_back(tempSprite);
+    }
+    sf::Image jumpTileset;
+    if (!jumpTileset.loadFromFile("assets/Player/Jump.png")) {
+        std::cerr << "Error loading jumpTileset.png" << std::endl;
+    }
+    std::vector<sf::Vector2f> jumpTextureCoords = {
+        {0, 0}, {22, 0}, {45, 0}, {70, 0}
+    };
+    std::vector<sf::Vector2f> jumpTextureSize = {
+        {22, 29}, {22, 29}, {24, 29}, {24, 29}
+    };
+    for (int i = 0; i < 5; i++) {
+        sf::Texture tempTexture;
+        if (!tempTexture.loadFromImage(jumpTileset, sf::IntRect(jumpTextureCoords[i].x, jumpTextureCoords[i].y, jumpTextureSize[i].x, jumpTextureSize[i].y))){
+            std::cerr << "Erreur chargement texture frame " << i << std::endl;
+        }
+        jumpTextures.push_back(tempTexture);
+    }
+    for(auto& texture : jumpTextures){
+        sf::Sprite tempSprite;
+        tempSprite.setTexture(texture);
+        float scale = window.getSize().x / 20.f / texture.getSize().x;
+        tempSprite.setScale(scale, scale);        
+        jumpSprites.push_back(tempSprite);
+    }
 
-    float dx = circleCenter.x - closestX;
-    float dy = circleCenter.y - closestY;
-
-    return (dx * dx + dy * dy) < (circle.getRadius() * circle.getRadius());
+    hitboxPlayer = sf::RectangleShape(sf::Vector2f(runSprites[0].getGlobalBounds().width, runSprites[0].getGlobalBounds().height - ((window.getSize().y / 9)/16))); // (window.getSize().y / 9)/16 to fit with the texture and get ur feet in the ground
+    hitboxPlayer.setFillColor(sf::Color::Transparent);
+    hitboxPlayer.setOutlineColor(sf::Color::Red);
+    hitboxPlayer.setOutlineThickness(1.0f);
 }
 
-bool Player::ApplyGravity(std::vector<std::vector <Tile>>& tiles, sf::CircleShape& drawPlayer){
-    SpeedY += gravity * deltaTime;
-    pos[1] += SpeedY;
+bool Player::ApplyGravity(std::vector<std::vector <Tile>>& tiles, float deltaTime){
+    Velocity += gravity * deltaTime;
+    pos.y += Velocity * deltaTime;
 
-    drawPlayer.setPosition(pos[0], pos[1]);
+    hitboxPlayer.setPosition(pos.x, pos.y);
 
     for (size_t y = 0; y < tiles.size(); y++){
-        for (size_t x = 0; x < tiles[y].size(); x++){
+        for (size_t x = 3; x < 5; x++){ // Block around the player
             if (tiles[y][x].getRect().getSize().x == 0 || tiles[y][x].getRect().getSize().y == 0) continue;
 
             sf::RectangleShape tileShape = tiles[y][x].getRect();
-            if(circleRectCollision(drawPlayer, tileShape)){
-                SpeedY = 0;
-                pos[1] = tileShape.getPosition().y - drawPlayer.getRadius() * 2;
-                drawPlayer.setPosition(pos[0], pos[1]); 
+            if(RectRectCollision(hitboxPlayer, tileShape)){
+                Velocity = 0;
+                pos.y = tileShape.getPosition().y - hitboxPlayer.getGlobalBounds().height;
+                hitboxPlayer.setPosition(pos.x, pos.y); 
                 return true;
             }
-        }
+        } 
     }
     return false;
 }
 
 
 bool Player::jump(bool doubleJump, bool onFloor){
-    SpeedY = -16;
+    Velocity = -17.f/0.016f;
     if(!doubleJump){
         return true;
     } else if (!onFloor)
@@ -76,4 +122,36 @@ bool Player::jump(bool doubleJump, bool onFloor){
     }
     return true;
 }
+ 
+void Player::draw(sf::RenderWindow& window){
+    window.draw(currentSkin);
+    // window.draw(hitboxPlayer);
+}
 
+void Player::updateSkin(float deltaTime){
+    static float elapsedTime = 0.0f;
+    static size_t currentFrame = 0;
+    elapsedTime += deltaTime;
+    if (Velocity < -10/0.016f){
+        currentSkin.setTexture(jumpTextures[0], true);
+        currentSkin.setScale(jumpSprites[0].getScale());
+    } else if (Velocity < -4/0.016f) {
+        currentSkin.setTexture(jumpTextures[1], true);
+        currentSkin.setScale(jumpSprites[1].getScale());
+    } else if (Velocity < 6/0.016f && Velocity != 0) {
+        currentSkin.setTexture(jumpTextures[2], true);
+        currentSkin.setScale(jumpSprites[2].getScale());
+    } else if (Velocity > 6/0.016f) {
+        currentSkin.setTexture(jumpTextures[3], true);
+        currentSkin.setScale(jumpSprites[3].getScale());
+    } else if (Velocity > 0 && elapsedTime <= 0.2f) {
+        currentSkin.setTexture(runTextures[currentFrame], true);
+        currentSkin.setScale(runSprites[currentFrame].getScale());
+    } else if (Velocity == 0 && elapsedTime >= 0.2f) {
+        currentFrame = (currentFrame + 1) % runTextures.size();
+        currentSkin.setTexture(runTextures[currentFrame], true);
+        currentSkin.setScale(runSprites[currentFrame].getScale());
+        elapsedTime = 0.0f;
+    }
+    currentSkin.setPosition(pos.x, pos.y);
+}
