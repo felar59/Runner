@@ -15,6 +15,9 @@ private:
     sf::RectangleShape shape;
     sf::Texture texture;
     sf::Sprite sprite;
+
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+    int TileSizeYadjust = desktopMode.height/9.f/16.f;
     
 public:
     Tile();

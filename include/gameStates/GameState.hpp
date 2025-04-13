@@ -25,6 +25,7 @@ private:
     sf::Time lastFrameTime;
     ParalaxBG paralaxBG;
     float deltaTime = 0.0f;
+    bool isPause = false;
     
 public:
     GameState(sf::RenderWindow& window);
@@ -35,7 +36,7 @@ public:
     void update() override;
     void draw(sf::RenderWindow& window) override;
     void setLoopManager(LoopManagement* manager);
-    void setDeltaTime(float deltaTime) override;
+    void isPaused(bool pausedState) override;
 };
 
 #endif

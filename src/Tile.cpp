@@ -38,7 +38,7 @@ void Tile::setTexture(const sf::Texture& texture) {
 // Getters
 
 sf::RectangleShape Tile::getRect(){
-    shape.setPosition(x, y + (1080.f/9.f)/16.f);
+    shape.setPosition(x, y + TileSizeYadjust);
     return shape;
 };
 

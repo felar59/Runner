@@ -102,7 +102,7 @@ bool Player::ApplyGravity(std::vector<std::vector <Tile>>& tiles, float deltaTim
             sf::RectangleShape tileShape = tiles[y][x].getRect();
             if(RectRectCollision(hitboxPlayer, tileShape)){
                 Velocity = 0;
-                pos.y = tileShape.getPosition().y - hitboxPlayer.getGlobalBounds().height;
+                pos.y = tileShape.getPosition().y - hitboxPlayer.getGlobalBounds().height + 2.f; // +2 for issue with windows to be sure of being on the tile and not slightly over which make us fall in a while.
                 hitboxPlayer.setPosition(pos.x, pos.y); 
                 return true;
             }
@@ -125,12 +125,13 @@ bool Player::jump(bool doubleJump, bool onFloor){
  
 void Player::draw(sf::RenderWindow& window){
     window.draw(currentSkin);
-    // window.draw(hitboxPlayer);
+    window.draw(hitboxPlayer);
 }
 
 void Player::updateSkin(float deltaTime){
     static float elapsedTime = 0.0f;
     static size_t currentFrame = 0;
+    std::cout << "Velocity: " << Velocity << std::endl;
     elapsedTime += deltaTime;
     if (Velocity < -10/0.016f){
         currentSkin.setTexture(jumpTextures[0], true);

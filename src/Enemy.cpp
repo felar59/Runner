@@ -131,7 +131,7 @@ void Enemy::updateSkin(float deltaTime){
 
 void Enemy::draw(sf::RenderWindow& window){
     window.draw(currentSkin);
-    // window.draw(hitboxEnemy);
+    window.draw(hitboxEnemy);
 }
 
 void Enemy::summonEnemy(sf::Vector2f summoningPos, float habitFactor){

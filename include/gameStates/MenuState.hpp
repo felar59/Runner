@@ -17,6 +17,9 @@ private:
     sf::Text exitButtonText;
     LoopManagement* loopMain = nullptr;
     float deltaTime = 0.0f;
+    sf::Clock clock;
+    sf::Time lastFrameTime;
+    bool isPause = false;
     
 public:
     MenuState();
@@ -27,7 +30,8 @@ public:
     void update() override;
     void draw(sf::RenderWindow& window) override;
     void setLoopManager(LoopManagement* manager);
-    void setDeltaTime(float deltaTime) override;
+    void isPaused(bool pausedState) override;
+
 };
 
 #endif

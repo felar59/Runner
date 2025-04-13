@@ -40,7 +40,6 @@ void GameState::handleEvents(sf::RenderWindow& window, sf::Event& event) {
 };
 
 void GameState::update() {
-    std::cout << "deltatime " << deltaTime << std::endl;
     // Set deltaTime
     sf::Time currentTime = clock.getElapsedTime();
     deltaTime = (currentTime - lastFrameTime).asSeconds();
@@ -86,6 +85,11 @@ void GameState::setLoopManager(LoopManagement* manager) {
     loopMain = manager;
 }
 
-void GameState::setDeltaTime(float deltaTime) {
-    this->deltaTime = deltaTime;
+void GameState::isPaused(bool pausedState) {
+    if (isPause && !pausedState){
+        // Reset the clock when unpausing
+        clock.restart();
+        lastFrameTime = clock.getElapsedTime();
+    }
+    isPause = pausedState;
 }

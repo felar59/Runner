@@ -130,7 +130,9 @@ void Tiles::shift(std::vector<std::vector<Tile>>& tiles, Enemy& enemy){
             }
         }
     }
-    enemy.summonEnemy({tiles[groundHeight][19].getPos().x - TileSizeX, tiles[groundHeight][19].getPos().y - TileSizeY}, elapsed);
+    if (tiles[groundHeight][16].isVoid() && tiles[groundHeight][17].isVoid() && tiles[groundHeight][18].isVoid()){ // not spawn behind a wall
+        enemy.summonEnemy({tiles[groundHeight][19].getPos().x - TileSizeX, tiles[groundHeight][19].getPos().y - TileSizeY}, elapsed);
+    }
 }
 
 void Tiles::moves(float& deltaTime, Enemy& enemy){

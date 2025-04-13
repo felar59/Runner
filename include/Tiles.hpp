@@ -19,7 +19,7 @@ private:
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
     int TileSizeX = desktopMode.width/16;
     int TileSizeY = desktopMode.height/9;
-    float GroundSpeed = 437.5f;
+    float GroundSpeed = 700.f;
     float moveOffset = 0.0f;
 
     FastNoiseLite noise;

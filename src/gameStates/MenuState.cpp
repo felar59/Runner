@@ -17,15 +17,15 @@ bool MenuState::LoadRessources(sf::RenderWindow& window) {
         return false;
     }
     sf::Vector2u windowSize = window.getSize();
-
+    
     playButton.setSize(sf::Vector2f(windowSize.x / 4, windowSize.y / 8));
     playButton.setFillColor(sf::Color::White);
     playButton.setPosition(windowSize.x/2 - playButton.getSize().x/2, windowSize.y/2 - playButton.getSize().y);
-
+    
     exitButton.setSize(sf::Vector2f(windowSize.x / 4, windowSize.y / 8));
     exitButton.setFillColor(sf::Color::White);
     exitButton.setPosition(windowSize.x/2 - playButton.getSize().x/2, windowSize.y/2 + 5);
-
+    
     playButtonText.setFont(font);
     playButtonText.setString("Play");
     playButtonText.setCharacterSize(65);
@@ -39,7 +39,10 @@ bool MenuState::LoadRessources(sf::RenderWindow& window) {
     exitButtonText.setFillColor(sf::Color::Black);
     exitButtonText.setPosition(exitButton.getPosition().x + exitButton.getSize().x / 2 - exitButtonText.getGlobalBounds().width / 2,
                                 exitButton.getPosition().y + exitButton.getSize().y / 2 - exitButtonText.getGlobalBounds().height);
-
+                                
+    // start Clock
+    clock.restart();
+    lastFrameTime = clock.getElapsedTime();
     return true;
 };
 
@@ -76,6 +79,12 @@ void MenuState::setLoopManager(LoopManagement* manager) {
     loopMain = manager;
 }
 
-void MenuState::setDeltaTime(float deltaTime) {
-    this->deltaTime = deltaTime;
+void MenuState::isPaused(bool pausedState) {
+    if (isPause && !pausedState){
+        // Reset the clock when unpausing
+        clock.restart();
+        lastFrameTime = clock.getElapsedTime();
+    }
+    isPause = pausedState;
 }
+
