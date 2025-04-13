@@ -22,7 +22,7 @@ void ParalaxBG::LoadRessources(sf::RenderWindow& window) {
             return;
         }
         bgSprites[i].setTexture(bgTextures[i]);
-        bgSprites[i].setPosition(0, -TileSizeY + TileSizeY/10);// Pour le mini vide de texture le +windowSize.y/1000
+        bgSprites[i].setPosition(0, -TileSizeY/2);
         sf::Vector2 ScaleBackgrounds = {bgSize.x / bgTextures[i].getSize().x, bgSize.y / bgTextures[i].getSize().y};
         bgSprites[i].setScale(ScaleBackgrounds.x, ScaleBackgrounds.y);
         if (i > 0) {

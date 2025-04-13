@@ -125,13 +125,12 @@ bool Player::jump(bool doubleJump, bool onFloor){
  
 void Player::draw(sf::RenderWindow& window){
     window.draw(currentSkin);
-    window.draw(hitboxPlayer);
+    // window.draw(hitboxPlayer);
 }
 
 void Player::updateSkin(float deltaTime){
     static float elapsedTime = 0.0f;
     static size_t currentFrame = 0;
-    std::cout << "Velocity: " << Velocity << std::endl;
     elapsedTime += deltaTime;
     if (Velocity < -10/0.016f){
         currentSkin.setTexture(jumpTextures[0], true);

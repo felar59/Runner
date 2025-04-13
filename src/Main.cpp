@@ -7,7 +7,7 @@ int main() {
     LoopManagement mainLoop;
 
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
-    sf::RenderWindow window(sf::VideoMode(desktopMode.width, desktopMode.height), "Runner", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(desktopMode.width, desktopMode.height), "Runner", sf::Style::None);
     window.setFramerateLimit(200);
 
     std::unique_ptr<MenuState> menuState = std::make_unique<MenuState>();;

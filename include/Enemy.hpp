@@ -10,7 +10,7 @@ class Enemy
 private:
     sf::Vector2f pos;
     float Velocity = 0.0f;
-    float gravity = 60.0f/0.016f;
+    float gravity = 50.0f/0.016f;
     float floorLimit = 0.f;
     sf::RectangleShape hitboxEnemy;
     std::string enemyHabit;
@@ -33,7 +33,9 @@ private:
     };
     std::map<AnimationType, Animation> animations;
     sf::Sprite currentSkin;
-    const std::vector<std::string> possibleHabits = {"Idler", "Sleeper", "Jumper", "Walker"};
+    const std::vector<std::string> possibleHabits = {"Sleeper", "Idler", "Jumper", "Walker"};
+    std::string lastHabit;
+    bool HasBorn = false;
 
 public:
     Enemy();

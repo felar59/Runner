@@ -78,7 +78,7 @@ void GameState::draw(sf::RenderWindow& window) {
     enemy.draw(window);
     
     // Tiles
-    tiles.draw(window);
+    tiles.draw(window);    
 };
 
 void GameState::setLoopManager(LoopManagement* manager) {

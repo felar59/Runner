@@ -63,7 +63,6 @@ void Tiles::LoadRessources(sf::RenderWindow& window){
     }
     for (auto& texture : textures){
         texture.getSize();
-        TileSize = window.getSize().x/16;
         sf::Sprite tempSprite;
         tempSprite.setTexture(texture);
         tempSprite.setScale(TileSizeX / static_cast<float>(texture.getSize().x),
@@ -130,7 +129,7 @@ void Tiles::shift(std::vector<std::vector<Tile>>& tiles, Enemy& enemy){
             }
         }
     }
-    if (tiles[groundHeight][16].isVoid() && tiles[groundHeight][17].isVoid() && tiles[groundHeight][18].isVoid()){ // not spawn behind a wall
+    if (tiles[groundHeight][17].isVoid() && tiles[groundHeight][18].isVoid()){ // not spawn behind a wall
         enemy.summonEnemy({tiles[groundHeight][19].getPos().x - TileSizeX, tiles[groundHeight][19].getPos().y - TileSizeY}, elapsed);
     }
 }

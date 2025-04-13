@@ -4,7 +4,7 @@
 #include <random>
 #include "Collision.hpp"
 
-Enemy::Enemy() : pos({1950.0f, 500.0f}), enemyHabit("Idler") { 
+Enemy::Enemy() : pos({-300.f, 500.f}), enemyHabit("Idler") { 
 }
 
 Enemy::Enemy(sf::Vector2f beginPos, std::string habit) {
@@ -44,7 +44,7 @@ void Enemy::LoadEnemy(sf::RenderWindow& window){
             std::cerr << "Error loading " + tileSetPath[i].second + ".png" << std::endl;
         }
         AnimationType currentType = static_cast<AnimationType>(i);
-        animations[currentType].speed = 1.f / tileSetPath[i].first; // Proportion for 0.1f for 8 frames
+        animations[currentType].speed = 0.8f / tileSetPath[i].first; // Proportion for 0.1f for 8 frames
         animations[currentType].textures.resize(tileSetPath[i].first);
         animations[currentType].sprites.resize(tileSetPath[i].first);
         // Apply the texture to the sprite
@@ -112,18 +112,28 @@ void Enemy::changeSkin(AnimationType type, float deltaTime) {
     }
 }
 
-void Enemy::updateSkin(float deltaTime){
-    if (enemyHabit == "Idler") {
-        changeSkin(AnimationType::IDLE, deltaTime);
-    } else if (enemyHabit == "Sleeper") {
-        changeSkin(AnimationType::SLEEP, deltaTime);
-    } else if (enemyHabit == "Jumper") {
-        changeSkin(AnimationType::JUMP, deltaTime);
-        if (animations[AnimationType::JUMP].currentFrame == 0 && Velocity == 0) {
-            Velocity = -17.f/0.016f;
+void Enemy::updateSkin(float deltaTime) {
+    if(pos.x < 1920.f && HasBorn == false) {
+        lastHabit = enemyHabit;
+        changeSkin(AnimationType::BORN, deltaTime);
+        if (animations[AnimationType::BORN].currentFrame == static_cast<int>(animations[AnimationType::BORN].textures.size()) - 1) {
+            animations[AnimationType::BORN].currentFrame = 0;
+            enemyHabit = lastHabit;
+            HasBorn = true;
         }
-    } else if (enemyHabit == "Walker"){
-        changeSkin(AnimationType::WALK, deltaTime);
+    } else{
+        if (enemyHabit == "Idler") {
+            changeSkin(AnimationType::IDLE, deltaTime);
+        } else if (enemyHabit == "Sleeper") {
+            changeSkin(AnimationType::SLEEP, deltaTime);
+        } else if (enemyHabit == "Jumper") {
+            changeSkin(AnimationType::JUMP, deltaTime);
+            if (animations[AnimationType::JUMP].currentFrame == 0 && Velocity == 0) {
+                Velocity = -16.f/0.016f;
+            }
+        } else if (enemyHabit == "Walker"){
+            changeSkin(AnimationType::WALK, deltaTime);
+        }
     }
     currentSkin.setPosition(pos.x + hitboxEnemy.getGlobalBounds().width, pos.y);
     hitboxEnemy.setPosition(pos.x, pos.y);
@@ -131,23 +141,28 @@ void Enemy::updateSkin(float deltaTime){
 
 void Enemy::draw(sf::RenderWindow& window){
     window.draw(currentSkin);
-    window.draw(hitboxEnemy);
+    // window.draw(hitboxEnemy);
 }
 
 void Enemy::summonEnemy(sf::Vector2f summoningPos, float habitFactor){
     if(pos.x < -hitboxEnemy.getGlobalBounds().width*2) {
-        if (rand() % 100 < habitFactor*10 + 5) {
+        if (rand() % 100 < habitFactor*10 + 10) {
             sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
             // desktopMode.height / 9.f / 16.f is the 1/16th of a tile to get the feet on the ground
             pos = {summoningPos.x, summoningPos.y + (desktopMode.height / 9.f / 16.f)};
             // Chance of summoning stronger ennemy based on habitFactor
-            size_t index = static_cast<size_t>((habitFactor) * 5 + (rand() % 2)) % (possibleHabits.size());
-
+            // naming pour une variable genre tempsconséquance:
+            size_t timeConsecuence = static_cast<size_t>(habitFactor * 3);
+            if (timeConsecuence > 2){
+                timeConsecuence = 2;
+            }
+            size_t index = timeConsecuence + (rand() % 2) % (possibleHabits.size());
             enemyHabit = possibleHabits[index];
 
             if (enemyHabit != "Walker") {
                 floorLimit = pos.y + (desktopMode.height / 9.f / 16.f);
             }
+            HasBorn = false;
         }
     }
 }
